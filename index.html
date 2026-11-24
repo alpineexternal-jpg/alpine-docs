@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alpine Lua</title>
+<meta name="description" content="Alpine Lua scripting reference">
+<style>
+:root{--bg:#f6f8fa;--panel:#ffffff;--line:#d9e0e7;--text:#1c2733;--muted:#5d6b7a;--accent:#1f7aa8;--accent-soft:#e3f1f8;--code:#eef2f6;--kw:#a23c7a;--str:#2b7a3d;--num:#9a5b00;--com:#7a8794;--fn:#1f5fa8}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e1319;--panel:#141b23;--line:#243040;--text:#dde5ee;--muted:#8b99a8;--accent:#6cc4ea;--accent-soft:#16303d;--code:#0a0f14;--kw:#e58fc2;--str:#9bd49f;--num:#f0b86a;--com:#6f7d8c;--fn:#8fc1ff}}
+:root[data-theme=dark]{--bg:#0e1319;--panel:#141b23;--line:#243040;--text:#dde5ee;--muted:#8b99a8;--accent:#6cc4ea;--accent-soft:#16303d;--code:#0a0f14;--kw:#e58fc2;--str:#9bd49f;--num:#f0b86a;--com:#6f7d8c;--fn:#8fc1ff}
+*{box-sizing:border-box}
+html{scroll-padding-top:76px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 "Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.top{position:sticky;top:0;z-index:20;height:60px;display:flex;align-items:center;gap:16px;padding:0 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;gap:10px;font-weight:700;font-size:18px;color:var(--text);white-space:nowrap}
+.brand small{font-weight:400;font-size:13px;color:var(--muted)}
+.brand svg{align-self:center}
+.search{position:relative;flex:1;max-width:420px;margin-left:auto}
+.search input{width:100%;height:36px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:14px}
+.search input:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.results{position:absolute;top:42px;left:0;right:0;max-height:60vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 12px 32px rgba(0,0,0,.25);display:none}
+.results.open{display:block}
+.results a{display:block;padding:9px 12px;border-bottom:1px solid var(--line);color:var(--text);font-size:14px}
+.results a:last-child{border-bottom:0}
+.results a:hover,.results a.sel{background:var(--accent-soft);text-decoration:none}
+.results b{color:var(--accent);font-weight:600}
+.results span{display:block;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.results p{margin:0;padding:12px;color:var(--muted);font-size:14px}
+button.icon{height:36px;min-width:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;cursor:pointer}
+button.icon:hover{border-color:var(--accent)}
+#menu{display:none}
+.layout{display:flex;max-width:1240px;margin:0 auto}
+.side{position:sticky;top:60px;align-self:flex-start;width:270px;flex:none;height:calc(100vh - 60px);overflow:auto;padding:20px 12px 40px 20px;border-right:1px solid var(--line)}
+.side a{display:block;padding:5px 10px;border-radius:6px;color:var(--muted);font-size:14.5px}
+.side a:hover{color:var(--text);text-decoration:none;background:var(--accent-soft)}
+.side a.page{color:var(--text);font-weight:600;margin-top:6px}
+.side .subs{display:none;margin:2px 0 6px 10px;border-left:1px solid var(--line);padding-left:6px}
+.side .group.active .subs{display:block}
+.side .group.active a.page{color:var(--accent)}
+.side a.sub{font-size:13.5px;padding:3px 10px}
+main{flex:1;min-width:0;padding:28px 40px 80px}
+article{max-width:820px}
+.js article{display:none}
+.js article.active{display:block}
+h1{font-size:32px;line-height:1.2;margin:8px 0 18px;letter-spacing:-.01em}
+h2{font-size:22px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px}
+h2 a.anchor,h3 a.anchor{color:inherit}
+h2 a.anchor:hover::after,h3 a.anchor:hover::after{content:" #";color:var(--accent)}
+p,li{color:var(--text)}
+code{font:13.5px/1.5 Consolas,"Cascadia Mono","SF Mono",Menlo,monospace;background:var(--code);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.hl{background:var(--code);border:1px solid var(--line);border-radius:10px;margin:14px 0;overflow:auto}
+.hl pre{margin:0;padding:14px 16px;font:13.5px/1.6 Consolas,"Cascadia Mono","SF Mono",Menlo,monospace;tab-size:4}
+.hl code{background:none;border:0;padding:0}
+.hl .k,.hl .kr,.hl .kd,.hl .ow,.hl .kc{color:var(--kw)}
+.hl .s,.hl .s1,.hl .s2,.hl .sb{color:var(--str)}
+.hl .mi,.hl .mf,.hl .mh{color:var(--num)}
+.hl .c1,.hl .cm{color:var(--com);font-style:italic}
+.hl .nb,.hl .nf{color:var(--fn)}
+.table{overflow:auto;margin:14px 0;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td code{white-space:nowrap}
+td:last-child code{white-space:normal}
+ul.ref{list-style:none;margin:14px 0;padding:14px 16px;columns:2;column-gap:28px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+ul.ref li{break-inside:avoid;padding:2px 0}
+ul.ref code{background:none;border:0;padding:0;font-size:13px}
+.pager{display:flex;justify-content:space-between;gap:16px;margin-top:56px;padding-top:20px;border-top:1px solid var(--line)}
+.pager a{display:block;padding:10px 16px;border:1px solid var(--line);border-radius:10px;font-weight:600;background:var(--panel)}
+.pager a:hover{border-color:var(--accent);text-decoration:none}
+.pager a span{display:block;font-size:12px;font-weight:400;color:var(--muted)}
+.pager .next{text-align:right}
+@media (max-width:900px){
+#menu{display:block}
+.brand small{display:none}
+.side{position:fixed;top:60px;left:0;bottom:0;z-index:15;background:var(--panel);transform:translateX(-100%);transition:transform .15s}
+.side.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.4)}
+main{padding:20px 18px 60px}
+ul.ref{columns:1}
+h1{font-size:26px}
+.search{max-width:none;min-width:0}
+}
+@media (max-width:520px){.brand{font-size:0;gap:0}.top{gap:10px;padding:0 12px}}
+</style>
+</head>
+<body>
+<header class="top">
+<button class="icon" id="menu" aria-label="Open navigation">Menu</button>
+<a class="brand" href="#start"><svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><path d="M1 21 9.5 5l4 7 3-5L25 21Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m7.2 9.4 2.3 2.2 2.2-2.4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Alpine Lua<small>Scripting reference</small></a>
+<div class="search"><input id="q" type="search" placeholder="Search the docs  ( / )" autocomplete="off" aria-label="Search"><div class="results" id="results"></div></div>
+<button class="icon" id="theme" aria-label="Switch between light and dark">Theme</button>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Pages"><div class="group" data-page="start"><a class="page" href="#start">Getting started</a><div class="subs"><a class="sub" href="#start/your-first-script">Your first script</a><a class="sub" href="#start/the-editor">The editor</a><a class="sub" href="#start/which-names-can-i-use">Which names can I use?</a><a class="sub" href="#start/files">Files</a></div></div><div class="group" data-page="lifecycle"><a class="page" href="#lifecycle">Scripts and lifecycle</a><div class="subs"><a class="sub" href="#lifecycle/how-a-script-runs">How a script runs</a><a class="sub" href="#lifecycle/hooks">Hooks</a><a class="sub" href="#lifecycle/tasks">Tasks</a><a class="sub" href="#lifecycle/time-and-screen">Time and screen</a><a class="sub" href="#lifecycle/script-and-logging">Script and logging</a><a class="sub" href="#lifecycle/limits">Limits</a></div></div><div class="group" data-page="drawing"><a class="page" href="#drawing">Drawing</a><div class="subs"><a class="sub" href="#drawing/colours">Colours</a><a class="sub" href="#drawing/shapes">Shapes</a><a class="sub" href="#drawing/text">Text</a><a class="sub" href="#drawing/images">Images</a><a class="sub" href="#drawing/world-to-screen">World to screen</a></div></div><div class="group" data-page="ui"><a class="page" href="#ui">Menu UI</a><div class="subs"><a class="sub" href="#ui/building-a-tab">Building a tab</a><a class="sub" href="#ui/containers">Containers</a><a class="sub" href="#ui/widgets">Widgets</a><a class="sub" href="#ui/widget-methods">Widget methods</a><a class="sub" href="#ui/other">Other</a></div></div><div class="group" data-page="input"><a class="page" href="#input">Input</a><div class="subs"><a class="sub" href="#input/reading">Reading</a><a class="sub" href="#input/sending">Sending</a><a class="sub" href="#input/clipboard-and-misc">Clipboard and misc</a><a class="sub" href="#input/roblox-style-events">Roblox-style events</a></div></div><div class="group" data-page="data"><a class="page" href="#data">Files, web and data</a><div class="subs"><a class="sub" href="#data/files">Files</a><a class="sub" href="#data/config">Config</a><a class="sub" href="#data/json-and-base64">JSON and Base64</a><a class="sub" href="#data/http">HTTP</a><a class="sub" href="#data/audio">Audio</a></div></div><div class="group" data-page="game"><a class="page" href="#game">Game, entities and memory</a><div class="subs"><a class="sub" href="#game/game">game</a><a class="sub" href="#game/instances">Instances</a><a class="sub" href="#game/entity">entity</a><a class="sub" href="#game/player-objects">Player objects</a><a class="sub" href="#game/utility-and-cheat">utility and cheat</a><a class="sub" href="#game/memory">memory</a></div></div><div class="group" data-page="datatypes"><a class="page" href="#datatypes">Datatypes</a><div class="subs"><a class="sub" href="#datatypes/vector3">Vector3</a><a class="sub" href="#datatypes/vector2">Vector2</a><a class="sub" href="#datatypes/cframe">CFrame</a><a class="sub" href="#datatypes/color3">Color3</a><a class="sub" href="#datatypes/udim-udim2-and-ray">UDim, UDim2 and Ray</a><a class="sub" href="#datatypes/random">Random</a><a class="sub" href="#datatypes/enum">Enum</a></div></div><div class="group" data-page="luau"><a class="page" href="#luau">Luau support</a><div class="subs"><a class="sub" href="#luau/syntax-that-is-translated">Syntax that is translated</a><a class="sub" href="#luau/library-additions">Library additions</a><a class="sub" href="#luau/behaviour-matched-to-luau">Behaviour matched to Luau</a><a class="sub" href="#luau/known-differences">Known differences</a></div></div><div class="group" data-page="matcha"><a class="page" href="#matcha">Matcha scripts</a><div class="subs"><a class="sub" href="#matcha/supported">Supported</a><a class="sub" href="#matcha/drawing-objects">Drawing objects</a><a class="sub" href="#matcha/works-differently">Works differently</a><a class="sub" href="#matcha/not-available">Not available</a></div></div><div class="group" data-page="serotonin"><a class="page" href="#serotonin">Serotonin scripts</a><div class="subs"><a class="sub" href="#serotonin/supported">Supported</a><a class="sub" href="#serotonin/example">Example</a><a class="sub" href="#serotonin/works-differently">Works differently</a><a class="sub" href="#serotonin/not-available">Not available</a></div></div><div class="group" data-page="examples"><a class="page" href="#examples">Examples</a><div class="subs"><a class="sub" href="#examples/watermark-with-a-menu-toggle">Watermark with a menu toggle</a><a class="sub" href="#examples/saving-settings">Saving settings</a><a class="sub" href="#examples/luau-and-roblox-style">Luau and Roblox style</a><a class="sub" href="#examples/fetching-json">Fetching JSON</a></div></div></nav>
+<main><article id="start" data-title="Getting started"><h1>Getting started</h1>
+<p>Alpine runs your scripts in an embedded Lua 5.4 VM. Each script gets its own state and its own thread, so one script cannot stall or break another.</p>
+<h2 id="start/your-first-script"><a class="anchor" href="#start/your-first-script">Your first script</a></h2>
+<p>Open the <strong>Lua</strong> panel, paste this and press <strong>Ctrl+Enter</strong>.</p>
+<div class="hl"><pre><span></span><code><span class="nv">hook</span><span class="p">.</span><span class="nf">register</span><span class="p">(</span><span class="s2">"onPaint"</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">()</span>
+<span class="w">    </span><span class="kd">local</span><span class="w"> </span><span class="nv">w</span><span class="p">,</span><span class="w"> </span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">screen</span><span class="p">.</span><span class="nf">size</span><span class="p">()</span>
+<span class="w">    </span><span class="nv">draw</span><span class="p">.</span><span class="nf">text_outlined</span><span class="p">(</span><span class="s2">"hello from alpine"</span><span class="p">,</span><span class="w"> </span><span class="nv">w</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span><span class="w"> </span><span class="mi">40</span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="p">.</span><span class="py">white</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="start/the-editor"><a class="anchor" href="#start/the-editor">The editor</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Action</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ctrl+Enter</td>
+<td>Run the script in the current tab. Running again reloads it.</td>
+</tr>
+<tr>
+<td>Ctrl+S</td>
+<td>Save to the tab's file. If the script is running it reloads.</td>
+</tr>
+<tr>
+<td>Shift+wheel</td>
+<td>Pan sideways when a line is wider than the editor.</td>
+</tr>
+<tr>
+<td><code>execute</code> / <code>reload</code></td>
+<td>The button changes name while the script is loaded.</td>
+</tr>
+<tr>
+<td><code>unload</code></td>
+<td>Stops the script and removes its drawings, tabs and widgets.</td>
+</tr>
+</tbody>
+</table></div>
+<p>A tab that was opened from or saved to a file is watched. When the file changes on disk the tab refreshes, and a running script reloads. Unsaved edits in the panel are never overwritten.</p>
+<p>When a script fails, the line is marked in red, the message is shown next to the code and in the status bar, and the tab's dot turns red.</p>
+<h2 id="start/which-names-can-i-use"><a class="anchor" href="#start/which-names-can-i-use">Which names can I use?</a></h2>
+<p>Alpine understands three styles. You can mix them in one script.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Style</th>
+<th>Example</th>
+<th>Page</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Native</td>
+<td><code>draw.rect_filled(x, y, w, h, color.red)</code></td>
+<td><a href="#drawing">Drawing</a>, <a href="#ui">Menu UI</a>, <a href="#input">Input</a></td>
+</tr>
+<tr>
+<td>Serotonin</td>
+<td><code>draw.RectFilled(x, y, w, h, Color3.new(1, 0, 0))</code></td>
+<td><a href="#serotonin">Serotonin scripts</a></td>
+</tr>
+<tr>
+<td>Matcha</td>
+<td><code>Drawing.new("Square")</code>, <code>UI.AddTab(...)</code></td>
+<td><a href="#matcha">Matcha scripts</a></td>
+</tr>
+</tbody>
+</table></div>
+<p>Luau syntax such as <code>+=</code>, <code>continue</code> and type annotations is accepted. See <a href="#luau">Luau support</a>.</p>
+<h2 id="start/files"><a class="anchor" href="#start/files">Files</a></h2>
+<p><code>file</code>, <code>config</code>, <code>readfile</code> and <code>writefile</code> all work inside one folder next to the program, called <code>files</code>. Paths are relative to it. <code>..</code> and drive letters are rejected.</p><footer class="pager"><span></span><a class="next" href="#lifecycle"><span>Next</span>Scripts and lifecycle</a></footer></article><article id="lifecycle" data-title="Scripts and lifecycle"><h1>Scripts and lifecycle</h1>
+<h2 id="lifecycle/how-a-script-runs"><a class="anchor" href="#lifecycle/how-a-script-runs">How a script runs</a></h2>
+<ol>
+<li>The script body runs once, as a task. It may call <code>task.wait</code>, so a top-level <code>while true do ... task.wait() end</code> loop is fine.</li>
+<li>After the body finishes or pauses for the first time, the script counts as loaded and <code>onLoad</code> fires.</li>
+<li><code>onFrame</code> fires at the script's tick rate. <code>onPaint</code> fires once per rendered frame.</li>
+<li>On unload, <code>onUnload</code> fires and everything the script created is removed.</li>
+</ol>
+<div class="hl"><pre><span></span><code><span class="nv">time</span><span class="p">.</span><span class="nf">set_rate</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+
+<span class="nv">hook</span><span class="p">.</span><span class="nf">register</span><span class="p">(</span><span class="s2">"onFrame"</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="nv">dt</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+
+<span class="nv">hook</span><span class="p">.</span><span class="nf">register</span><span class="p">(</span><span class="s2">"onPaint"</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="nv">dt</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+
+<span class="nv">hook</span><span class="p">.</span><span class="nf">register</span><span class="p">(</span><span class="s2">"onUnload"</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">()</span>
+<span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Draw calls only have an effect inside <code>onPaint</code>.</p>
+<h2 id="lifecycle/hooks"><a class="anchor" href="#lifecycle/hooks">Hooks</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hook.register(name, fn)</code></td>
+<td>Add a callback.</td>
+</tr>
+<tr>
+<td><code>hook.unregister(name, fn)</code></td>
+<td>Remove it.</td>
+</tr>
+<tr>
+<td><code>hook.count(name)</code></td>
+<td>Number of callbacks on an event.</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Arguments</th>
+<th>Fires</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>onFrame</code></td>
+<td><code>dt</code></td>
+<td>At the tick rate (default 144 per second).</td>
+</tr>
+<tr>
+<td><code>onPaint</code></td>
+<td><code>dt</code></td>
+<td>Every rendered frame.</td>
+</tr>
+<tr>
+<td><code>onLoad</code></td>
+<td></td>
+<td>Once, after the body ran.</td>
+</tr>
+<tr>
+<td><code>onUnload</code></td>
+<td></td>
+<td>Before the script is removed.</td>
+</tr>
+<tr>
+<td><code>onMenuOpen</code>, <code>onMenuClose</code></td>
+<td></td>
+<td>When the menu opens or closes.</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>cheat.register</code> accepts the same events plus the Serotonin names <code>onUpdate</code>, <code>onSlowUpdate</code>, <code>shutdown</code> and <code>newPlace</code>.</p>
+<p>A callback that raises an error is reported once and then removed. The rest of the script keeps running.</p>
+<h2 id="lifecycle/tasks"><a class="anchor" href="#lifecycle/tasks">Tasks</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>task.spawn(fn, ...)</code></td>
+<td>Run <code>fn</code> now as a new task. Returns the thread.</td>
+</tr>
+<tr>
+<td><code>task.defer(fn, ...)</code></td>
+<td>Run it on the next tick.</td>
+</tr>
+<tr>
+<td><code>task.delay(seconds, fn, ...)</code></td>
+<td>Run it later.</td>
+</tr>
+<tr>
+<td><code>task.wait(seconds)</code></td>
+<td>Pause the current task. Returns the time waited.</td>
+</tr>
+<tr>
+<td><code>task.cancel(thread)</code></td>
+<td>Stop a task.</td>
+</tr>
+<tr>
+<td><code>task.count()</code></td>
+<td>Tasks currently waiting.</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>wait</code>, <code>spawn</code> and <code>delay</code> are the same functions without the prefix.</p>
+<p><code>task.wait</code> cannot be called directly inside a hook callback. Wrap the work in <code>task.spawn</code>.</p>
+<div class="hl"><pre><span></span><code><span class="nv">task</span><span class="p">.</span><span class="nf">spawn</span><span class="p">(</span><span class="kr">function</span><span class="p">()</span>
+<span class="w">    </span><span class="kr">while</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">        </span><span class="nv">task</span><span class="p">.</span><span class="nf">wait</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">        </span><span class="nb">print</span><span class="p">(</span><span class="s2">"one second passed"</span><span class="p">)</span>
+<span class="w">    </span><span class="kr">end</span>
+<span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="lifecycle/time-and-screen"><a class="anchor" href="#lifecycle/time-and-screen">Time and screen</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>time.now()</code></td>
+<td>Seconds since the script started.</td>
+</tr>
+<tr>
+<td><code>time.clock()</code></td>
+<td>Steady clock in seconds. Use it to measure elapsed time.</td>
+</tr>
+<tr>
+<td><code>time.unix()</code></td>
+<td>Wall-clock time in seconds since 1970.</td>
+</tr>
+<tr>
+<td><code>time.dt()</code></td>
+<td>Seconds since the last paint.</td>
+</tr>
+<tr>
+<td><code>time.frame()</code></td>
+<td>Frame counter.</td>
+</tr>
+<tr>
+<td><code>time.rate()</code>, <code>time.set_rate(hz)</code></td>
+<td>Tick rate, 0 to 1000. 0 ticks once per rendered frame.</td>
+</tr>
+<tr>
+<td><code>time.paint_ms()</code></td>
+<td>How long the last <code>onPaint</code> took.</td>
+</tr>
+<tr>
+<td><code>screen.size()</code>, <code>screen.width()</code>, <code>screen.height()</code></td>
+<td>Game window size in pixels.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="lifecycle/script-and-logging"><a class="anchor" href="#lifecycle/script-and-logging">Script and logging</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>script.name()</code>, <code>script.id()</code></td>
+<td>Identity of the running script.</td>
+</tr>
+<tr>
+<td><code>script.unload()</code></td>
+<td>Stop this script from inside.</td>
+</tr>
+<tr>
+<td><code>print(...)</code>, <code>log.info(...)</code></td>
+<td>Normal console line.</td>
+</tr>
+<tr>
+<td><code>log.good(...)</code></td>
+<td>Green line.</td>
+</tr>
+<tr>
+<td><code>warn(...)</code>, <code>log.warn(...)</code></td>
+<td>Yellow line.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="lifecycle/limits"><a class="anchor" href="#lifecycle/limits">Limits</a></h2>
+<p>A single callback or task step may run about 50 million VM instructions. After that it is stopped with an error, so an accidental infinite loop cannot freeze the script thread. A script that produces ten errors within one second is unloaded.</p><footer class="pager"><a href="#start"><span>Previous</span>Getting started</a><a class="next" href="#drawing"><span>Next</span>Drawing</a></footer></article><article id="drawing" data-title="Drawing"><h1>Drawing</h1>
+<p>Call these inside <code>onPaint</code>. Coordinates are pixels from the top-left of the game window.</p>
+<p>Native functions take a packed colour made with <code>color.rgba</code>. The PascalCase versions (<code>draw.Line</code>, <code>draw.RectFilled</code>, ...) take a <code>Color3</code> instead, see <a href="#serotonin">Serotonin scripts</a>.</p>
+<h2 id="drawing/colours"><a class="anchor" href="#drawing/colours">Colours</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>color.rgba(r, g, b, a)</code></td>
+<td>Pack 0-255 channels. <code>a</code> defaults to 255.</td>
+</tr>
+<tr>
+<td><code>color.alpha(col, a)</code></td>
+<td>Same colour with a new alpha.</td>
+</tr>
+<tr>
+<td><code>color.unpack(col)</code></td>
+<td>Returns <code>r, g, b, a</code>.</td>
+</tr>
+<tr>
+<td><code>color.white</code>, <code>color.black</code>, <code>color.red</code>, <code>color.green</code>, <code>color.blue</code></td>
+<td>Ready-made colours.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Most draw calls end with an optional <code>alpha</code> (0-255) that overrides the colour's own alpha.</p>
+<h2 id="drawing/shapes"><a class="anchor" href="#drawing/shapes">Shapes</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>draw.line(x1, y1, x2, y2, col, thickness, alpha)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>draw.rect(x, y, w, h, col, thickness, rounding, alpha)</code></td>
+<td>Outline.</td>
+</tr>
+<tr>
+<td><code>draw.rect_filled(x, y, w, h, col, rounding, alpha)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>draw.gradient(x, y, w, h, startCol, endCol, horizontal)</code></td>
+<td>Vertical unless <code>horizontal</code> is true.</td>
+</tr>
+<tr>
+<td><code>draw.rect_multi(x, y, w, h, c1, c2, c3, c4)</code></td>
+<td>One colour per corner.</td>
+</tr>
+<tr>
+<td><code>draw.circle(x, y, radius, col, thickness, segments, alpha)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>draw.circle_filled(x, y, radius, col, segments, alpha)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>draw.arc(x, y, radius, a0, a1, col, thickness, segments)</code></td>
+<td>Angles in radians.</td>
+</tr>
+<tr>
+<td><code>draw.bezier(x1, y1, x2, y2, x3, y3, x4, y4, col, thickness, segments)</code></td>
+<td>Cubic curve.</td>
+</tr>
+<tr>
+<td><code>draw.triangle(x1, y1, x2, y2, x3, y3, col, thickness, alpha)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>draw.triangle_filled(x1, y1, x2, y2, x3, y3, col, alpha)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>draw.polyline(points, col, closed, thickness, alpha)</code></td>
+<td><code>points</code> is <code>{ {x, y}, {x, y}, ... }</code>.</td>
+</tr>
+<tr>
+<td><code>draw.lines(points, col, thickness, alpha)</code></td>
+<td>Every two points form one separate line.</td>
+</tr>
+<tr>
+<td><code>draw.polyline_fade(points, col, thickness, alphaStart, alphaEnd, thicknessEnd, curve)</code></td>
+<td>Trail that fades along its length.</td>
+</tr>
+<tr>
+<td><code>draw.convex_poly_filled(points, col, alpha)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>draw.convex_hull(points)</code></td>
+<td>Returns the outer hull of a point list.</td>
+</tr>
+<tr>
+<td><code>draw.glow_rect(x, y, w, h, col, size, rounding)</code></td>
+<td>Soft glow around a box.</td>
+</tr>
+<tr>
+<td><code>draw.glow_circle(x, y, radius, col, size)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>draw.glass_rect(x, y, w, h, col, rounding)</code></td>
+<td>Translucent panel with a sheen.</td>
+</tr>
+<tr>
+<td><code>draw.push_clip(x, y, w, h, intersect)</code>, <code>draw.pop_clip()</code></td>
+<td>Restrict drawing to a rectangle.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="drawing/text"><a class="anchor" href="#drawing/text">Text</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>draw.text(text, x, y, col, size, alpha)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>draw.text_outlined(text, x, y, col, size, alpha)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>draw.text_font(text, x, y, col, font, alpha, size)</code></td>
+<td><code>font</code> is a name from <code>draw.fonts()</code>.</td>
+</tr>
+<tr>
+<td><code>draw.text_font_outlined(text, x, y, col, font, alpha, size)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>draw.text_size(text, font, size)</code></td>
+<td>Returns <code>width, height</code>.</td>
+</tr>
+<tr>
+<td><code>draw.fonts()</code></td>
+<td>List of font names.</td>
+</tr>
+<tr>
+<td><code>draw.load_font(name, data, size)</code></td>
+<td>Register a TTF from raw file bytes.</td>
+</tr>
+<tr>
+<td><code>draw.outline_style(style)</code></td>
+<td><code>"shadow"</code>, <code>"outline"</code> or <code>"outline8"</code>.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="drawing/images"><a class="anchor" href="#drawing/images">Images</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image.load(data)</code></td>
+<td>Raw PNG/JPG bytes. Returns an id, or nil.</td>
+</tr>
+<tr>
+<td><code>image.ready(id)</code></td>
+<td>True once the texture is on the GPU.</td>
+</tr>
+<tr>
+<td><code>image.size(id)</code></td>
+<td>Returns <code>width, height</code>.</td>
+</tr>
+<tr>
+<td><code>image.free(id)</code></td>
+<td>Release the texture.</td>
+</tr>
+<tr>
+<td><code>draw.image(id, x, y, w, h, r, g, b, a)</code></td>
+<td>Tint channels default to 255.</td>
+</tr>
+</tbody>
+</table></div>
+<div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">file</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="s2">"logo.png"</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">logo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="nv">image</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="nv">data</span><span class="p">)</span>
+
+<span class="nv">hook</span><span class="p">.</span><span class="nf">register</span><span class="p">(</span><span class="s2">"onPaint"</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">()</span>
+<span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="nv">logo</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="nv">image</span><span class="p">.</span><span class="nf">ready</span><span class="p">(</span><span class="nv">logo</span><span class="p">)</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="nv">draw</span><span class="p">.</span><span class="nf">image</span><span class="p">(</span><span class="nv">logo</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">64</span><span class="p">,</span><span class="w"> </span><span class="mi">64</span><span class="p">)</span><span class="w"> </span><span class="kr">end</span>
+<span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="drawing/world-to-screen"><a class="anchor" href="#drawing/world-to-screen">World to screen</a></h2>
+<p><code>utility.WorldToScreen(position)</code> returns <code>x, y, onScreen</code>. The Matcha form <code>WorldToScreen(position)</code> returns a <code>Vector2</code> and a boolean.</p><footer class="pager"><a href="#lifecycle"><span>Previous</span>Scripts and lifecycle</a><a class="next" href="#ui"><span>Next</span>Menu UI</a></footer></article><article id="ui" data-title="Menu UI"><h1>Menu UI</h1>
+<p>Scripts can add their own tabs to the main menu or open separate panels. Widgets keep their values when the script is reloaded.</p>
+<h2 id="ui/building-a-tab"><a class="anchor" href="#ui/building-a-tab">Building a tab</a></h2>
+<div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">tab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">ui</span><span class="p">.</span><span class="nf">tab</span><span class="p">(</span><span class="s2">"My script"</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">tab</span><span class="p">:</span><span class="nf">group</span><span class="p">(</span><span class="s2">"Options"</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">box</span><span class="p">:</span><span class="nf">toggle</span><span class="p">(</span><span class="s2">"Enabled"</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">range</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">box</span><span class="p">:</span><span class="nf">slider_int</span><span class="p">(</span><span class="s2">"Range"</span><span class="p">,</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span><span class="w"> </span><span class="s2">" st"</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">box</span><span class="p">:</span><span class="nf">combo</span><span class="p">(</span><span class="s2">"Mode"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s2">"Box"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Corner"</span><span class="p">,</span><span class="w"> </span><span class="s2">"None"</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">box</span><span class="p">:</span><span class="nf">keybind</span><span class="p">(</span><span class="s2">"Hold key"</span><span class="p">,</span><span class="w"> </span><span class="mh">0x46</span><span class="p">)</span>
+
+<span class="nv">enabled</span><span class="p">:</span><span class="nf">on_change</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="nv">value</span><span class="p">)</span><span class="w"> </span><span class="nb">print</span><span class="p">(</span><span class="s2">"enabled is now"</span><span class="p">,</span><span class="w"> </span><span class="nv">value</span><span class="p">)</span><span class="w"> </span><span class="kr">end</span><span class="p">)</span>
+
+<span class="nv">hook</span><span class="p">.</span><span class="nf">register</span><span class="p">(</span><span class="s2">"onFrame"</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">()</span>
+<span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="nv">enabled</span><span class="p">:</span><span class="nf">get</span><span class="p">()</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="nv">key</span><span class="p">:</span><span class="nf">active</span><span class="p">()</span><span class="w"> </span><span class="kr">then</span>
+<span class="w">    </span><span class="kr">end</span>
+<span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="ui/containers"><a class="anchor" href="#ui/containers">Containers</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ui.tab(name)</code></td>
+<td>New tab in the main menu. <code>ui.main_tab</code> is the same.</td>
+</tr>
+<tr>
+<td><code>ui.panel(title, width, height)</code></td>
+<td>Separate floating panel.</td>
+</tr>
+<tr>
+<td><code>panel:tab(name)</code>, <code>panel:show(bool)</code>, <code>panel:toggle()</code>, <code>panel:shown()</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>tab:group(name, column, height)</code></td>
+<td>A titled box. <code>column</code> starts at 1.</td>
+</tr>
+<tr>
+<td><code>tab:columns(n)</code></td>
+<td>Force the number of columns.</td>
+</tr>
+<tr>
+<td><code>group:visible(bool)</code></td>
+<td>Show or hide the whole box.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="ui/widgets"><a class="anchor" href="#ui/widgets">Widgets</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Value from <code>:get()</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>group:toggle(name, default)</code></td>
+<td>boolean</td>
+</tr>
+<tr>
+<td><code>group:slider(name, default, min, max, suffix)</code></td>
+<td>number</td>
+</tr>
+<tr>
+<td><code>group:slider_int(name, default, min, max, suffix)</code></td>
+<td>integer</td>
+</tr>
+<tr>
+<td><code>group:combo(name, items, default)</code></td>
+<td>index, starting at 1</td>
+</tr>
+<tr>
+<td><code>group:multi(name, items, mask)</code></td>
+<td>bitmask, bit 0 is the first item</td>
+</tr>
+<tr>
+<td><code>group:color(name, r, g, b, a)</code></td>
+<td>packed colour; use <code>:rgba()</code> for channels</td>
+</tr>
+<tr>
+<td><code>group:keybind(name, key)</code></td>
+<td>virtual-key code</td>
+</tr>
+<tr>
+<td><code>group:input(name, default, hint)</code></td>
+<td>string</td>
+</tr>
+<tr>
+<td><code>group:button(name, fn)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>group:label(text)</code>, <code>group:text(text)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>group:spacing(height)</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="ui/widget-methods"><a class="anchor" href="#ui/widget-methods">Widget methods</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>w:get()</code>, <code>w:set(value)</code></td>
+<td>Read or change the value.</td>
+</tr>
+<tr>
+<td><code>w:on_change(fn)</code></td>
+<td>Called with the new value.</td>
+</tr>
+<tr>
+<td><code>w:on_click(fn)</code></td>
+<td>Buttons.</td>
+</tr>
+<tr>
+<td><code>w:rgba()</code></td>
+<td>Colour widgets: <code>r, g, b, a</code> as 0-255.</td>
+</tr>
+<tr>
+<td><code>w:active()</code></td>
+<td>Keybinds: true while the bind is on. Toggles: the value.</td>
+</tr>
+<tr>
+<td><code>w:mode()</code>, <code>w:set_mode(m)</code></td>
+<td>Keybinds: 0 hold, 1 toggle, 2 always.</td>
+</tr>
+<tr>
+<td><code>w:name(text)</code></td>
+<td>Rename.</td>
+</tr>
+<tr>
+<td><code>w:items(list)</code>, <code>w:items_list()</code></td>
+<td>Replace or read combo items.</td>
+</tr>
+<tr>
+<td><code>w:visible(bool)</code></td>
+<td>Show or hide.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="ui/other"><a class="anchor" href="#ui/other">Other</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ui.menu_open()</code></td>
+<td>True while the menu is open.</td>
+</tr>
+<tr>
+<td><code>ui.notify(text, seconds)</code></td>
+<td>Toast notification.</td>
+</tr>
+<tr>
+<td><code>ui.remember(false)</code></td>
+<td>Call before creating widgets to stop values carrying over a reload.</td>
+</tr>
+</tbody>
+</table></div>
+<p>A restored value fires <code>on_change</code> once after the script loads. If you change a widget's default, range or item list in the source, the new default wins.</p><footer class="pager"><a href="#drawing"><span>Previous</span>Drawing</a><a class="next" href="#input"><span>Next</span>Input</a></footer></article><article id="input" data-title="Input"><h1>Input</h1>
+<p>Keys are Windows virtual-key codes (<code>0x46</code> is F) or names such as <code>"f"</code>, <code>"space"</code>, <code>"lshift"</code>, <code>"f5"</code>, <code>"leftmouse"</code>. Names are not case sensitive.</p>
+<h2 id="input/reading"><a class="anchor" href="#input/reading">Reading</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>input.key_down(vk)</code></td>
+<td>True while the key or mouse button is held.</td>
+</tr>
+<tr>
+<td><code>keyboard.IsPressed(key)</code></td>
+<td>Same, and accepts names.</td>
+</tr>
+<tr>
+<td><code>keyboard.IsClicked(key)</code></td>
+<td>True once per press.</td>
+</tr>
+<tr>
+<td><code>mouse.IsPressed(button)</code>, <code>mouse.IsClicked(button)</code></td>
+<td>Buttons: <code>"leftmouse"</code>, <code>"rightmouse"</code>, <code>"middlemouse"</code>, <code>"mouse4"</code>, <code>"mouse5"</code>.</td>
+</tr>
+<tr>
+<td><code>input.mouse()</code></td>
+<td>Cursor position <code>x, y</code>.</td>
+</tr>
+<tr>
+<td><code>input.wheel()</code></td>
+<td>Wheel movement since the last tick.</td>
+</tr>
+<tr>
+<td><code>input.foreground()</code></td>
+<td>Title and program name of the focused window.</td>
+</tr>
+<tr>
+<td><code>input.game_focused()</code></td>
+<td>True while the game window has focus.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Check <code>input.game_focused()</code> before sending keys, or a script will type into whatever window is in front.</p>
+<h2 id="input/sending"><a class="anchor" href="#input/sending">Sending</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>input.send_key(vk, down)</code></td>
+<td>Press or release a key.</td>
+</tr>
+<tr>
+<td><code>input.click_key(vk, holdMs)</code></td>
+<td>Press and release. Hold defaults to 50 ms.</td>
+</tr>
+<tr>
+<td><code>input.send_mouse(button, down)</code></td>
+<td>1 left, 2 right, 4 middle, 5 and 6 side buttons.</td>
+</tr>
+<tr>
+<td><code>input.click_mouse(button, holdMs)</code></td>
+<td>Click. Without <code>holdMs</code> the release is immediate.</td>
+</tr>
+<tr>
+<td><code>input.scroll(delta)</code></td>
+<td>Positive scrolls up.</td>
+</tr>
+<tr>
+<td><code>input.move_mouse(dx, dy)</code></td>
+<td>Move relative to the current position.</td>
+</tr>
+<tr>
+<td><code>input.set_mouse(x, y)</code></td>
+<td>Move to a position inside the game window.</td>
+</tr>
+<tr>
+<td><code>keyboard.Press(key)</code>, <code>keyboard.Release(key)</code>, <code>keyboard.Click(key, holdMs)</code></td>
+<td>Name-based versions.</td>
+</tr>
+<tr>
+<td><code>mouse.Click(button, holdMs)</code>, <code>mouse.Press(button)</code>, <code>mouse.Release(button)</code>, <code>mouse.Scroll(delta)</code>, <code>mouse.Move(dx, dy)</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="input/clipboard-and-misc"><a class="anchor" href="#input/clipboard-and-misc">Clipboard and misc</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>input.clipboard_get()</code>, <code>input.clipboard_set(text)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>input.random_int(lo, hi)</code>, <code>input.random_float(lo, hi)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>input.fingerprint()</code></td>
+<td>Stable id for this machine.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="input/roblox-style-events"><a class="anchor" href="#input/roblox-style-events">Roblox-style events</a></h2>
+<div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">UserInputService</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">game</span><span class="p">:</span><span class="nf">GetService</span><span class="p">(</span><span class="s2">"UserInputService"</span><span class="p">)</span>
+
+<span class="nv">UserInputService</span><span class="p">.</span><span class="py">InputBegan</span><span class="p">:</span><span class="nf">Connect</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="nv">input</span><span class="p">)</span>
+<span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="nv">input</span><span class="p">.</span><span class="py">KeyCode</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nv">Enum</span><span class="p">.</span><span class="py">KeyCode</span><span class="p">.</span><span class="py">E</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="nb">print</span><span class="p">(</span><span class="s2">"E pressed"</span><span class="p">)</span><span class="w"> </span><span class="kr">end</span>
+<span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+
+<p><code>Enum.KeyCode</code> values are Windows key codes, so they can be passed to any function on this page.</p><footer class="pager"><a href="#ui"><span>Previous</span>Menu UI</a><a class="next" href="#data"><span>Next</span>Files, web and data</a></footer></article><article id="data" data-title="Files, web and data"><h1>Files, web and data</h1>
+<h2 id="data/files"><a class="anchor" href="#data/files">Files</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>file.read(path)</code></td>
+<td>Contents, or nil. Binary safe.</td>
+</tr>
+<tr>
+<td><code>file.write(path, content)</code></td>
+<td>true on success. Creates folders as needed.</td>
+</tr>
+<tr>
+<td><code>file.append(path, content)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>file.exists(path)</code>, <code>file.isfile(path)</code>, <code>file.isdir(path)</code></td>
+<td>boolean</td>
+</tr>
+<tr>
+<td><code>file.mkdir(path)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>file.delete(path)</code></td>
+<td>Deletes a file or a whole folder.</td>
+</tr>
+<tr>
+<td><code>file.list(path)</code></td>
+<td>Names inside a folder.</td>
+</tr>
+<tr>
+<td><code>file.root()</code></td>
+<td>Full path of the files folder.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="data/config"><a class="anchor" href="#data/config">Config</a></h2>
+<p>Saves a table as <code>configs/&lt;name&gt;.json</code>.</p>
+<div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">settings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">config</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="s2">"my_script"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nv">range</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">300</span><span class="w"> </span><span class="p">})</span>
+<span class="nv">settings</span><span class="p">.</span><span class="py">range</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">500</span>
+<span class="nv">config</span><span class="p">.</span><span class="nf">save</span><span class="p">(</span><span class="s2">"my_script"</span><span class="p">,</span><span class="w"> </span><span class="nv">settings</span><span class="p">)</span>
+</code></pre></div>
+
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>config.save(name, table)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>config.load(name, defaults)</code></td>
+<td>Missing keys are filled from <code>defaults</code>.</td>
+</tr>
+<tr>
+<td><code>config.exists(name)</code>, <code>config.delete(name)</code>, <code>config.list()</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="data/json-and-base64"><a class="anchor" href="#data/json-and-base64">JSON and Base64</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>json.encode(value, pretty)</code></td>
+<td><code>pretty</code> adds indentation.</td>
+</tr>
+<tr>
+<td><code>json.decode(text)</code></td>
+<td>Returns the value, or <code>nil, message</code>. <code>null</code> becomes <code>nil</code>.</td>
+</tr>
+<tr>
+<td><code>base64.encode(data)</code>, <code>base64.decode(text)</code></td>
+<td>Binary safe.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="data/http"><a class="anchor" href="#data/http">HTTP</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>http.get(url, headers, callback)</code></td>
+<td>Runs in the background.</td>
+</tr>
+<tr>
+<td><code>http.post(url, headers, body, callback)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>http.request(method, url, headers, body, callback)</code></td>
+<td>Any method.</td>
+</tr>
+<tr>
+<td><code>http.get_sync(url, headers)</code></td>
+<td>Blocks. Returns <code>body, status, error</code>.</td>
+</tr>
+<tr>
+<td><code>http.post_sync(url, headers, body)</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>The callback receives <code>body, status, error</code>. <code>body</code> is nil when the request failed.</p>
+<div class="hl"><pre><span></span><code><span class="nv">http</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="s2">"https://httpbin.org/json"</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="nv">body</span><span class="p">,</span><span class="w"> </span><span class="nv">status</span><span class="p">)</span>
+<span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="kr">end</span>
+<span class="w">    </span><span class="kd">local</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">json</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="nv">body</span><span class="p">)</span>
+<span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="nv">status</span><span class="p">,</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="nv">data</span><span class="p">.</span><span class="py">slideshow</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="nv">data</span><span class="p">.</span><span class="py">slideshow</span><span class="p">.</span><span class="py">title</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+
+<p><code>require("name")</code> loads <code>name.lua</code> from the files folder once and returns its result. <code>loadstring(source)</code> compiles text.</p>
+<h2 id="data/audio"><a class="anchor" href="#data/audio">Audio</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>audio.playSound(wav, loop, volume, pitch)</code></td>
+<td><code>wav</code> is the raw bytes of a .wav file. Volume 0-2, pitch is a speed multiplier.</td>
+</tr>
+<tr>
+<td><code>audio.beep(frequency, ms)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>audio.stopAll()</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>One sound plays at a time. A script's sound stops when it unloads.</p><footer class="pager"><a href="#input"><span>Previous</span>Input</a><a class="next" href="#game"><span>Next</span>Game, entities and memory</a></footer></article><article id="game" data-title="Game, entities and memory"><h1>Game, entities and memory</h1>
+<p>Every name on this page also exists in camelCase and snake_case, for example <code>entity.GetPlayers</code>, <code>entity.getPlayers</code> and <code>entity.get_players</code>.</p>
+<p>Parameter names below are taken from the implementation.</p>
+<h2 id="game/game"><a class="anchor" href="#game/game">game</a></h2>
+<p><code>game.Workspace</code>, <code>game.Players</code>, <code>game.LocalPlayer</code>, <code>game.DataModel</code>, <code>game.PlaceID</code> and <code>game.CameraPosition</code> are properties. <code>workspace</code> is a global shortcut.</p>
+<p><ul class="ref"><li><code>game.ClearCache()</code></li><li><code>game.DefineProperty(className, name, type_, offset, via)</code></li><li><code>game.FindFirstChild(self, name)</code></li><li><code>game.GetCameraPos()</code></li><li><code>game.GetChildren()</code></li><li><code>game.GetOffset(name)</code></li><li><code>game.GetService(self, name)</code></li><li><code>game.HttpGet(_, url, ...)</code></li><li><code>game.IsA(self, c)</code></li><li><code>game.Refresh()</code></li><li><code>game.SetCacheTTL(seconds)</code></li><li><code>game.SetOffset(name, value)</code></li><li><code>game.Wrap(addr)</code></li><li><code>game.getservice(self, name)</code></li></ul></p>
+<p>Services returned by <code>game:GetService</code> are instances from the game, except <code>RunService</code>, <code>UserInputService</code> and <code>HttpService</code>, which Alpine provides itself.</p>
+<h2 id="game/instances"><a class="anchor" href="#game/instances">Instances</a></h2>
+<p>Read properties with a dot: <code>part.Position</code>, <code>part.Size</code>, <code>humanoid.Health</code>, <code>inst.Name</code>, <code>inst.ClassName</code>, <code>inst.Parent</code>, <code>inst.Address</code>. Which properties exist depends on the offsets the program has loaded.</p>
+<p><ul class="ref"><li><code>instance:FindFirstAncestor(name)</code></li><li><code>instance:FindFirstAncestorOfClass(className)</code></li><li><code>instance:FindFirstChild(name, recursive)</code></li><li><code>instance:FindFirstChildOfClass(className)</code></li><li><code>instance:FindFirstChildWhichIsA(className, recursive)</code></li><li><code>instance:FindFirstDescendant(name)</code></li><li><code>instance:FindFirstDescendantOfClass(className)</code></li><li><code>instance:FindFirstDescendantWhichIsA(className)</code></li><li><code>instance:GetBoneCFrame(name)</code></li><li><code>instance:GetBoneInstance(name)</code></li><li><code>instance:GetBonePosition(name)</code></li><li><code>instance:GetBoundingBox()</code></li><li><code>instance:GetCharacter()</code></li><li><code>instance:GetChildren()</code></li><li><code>instance:GetDescendants()</code></li><li><code>instance:GetDisplayName()</code></li><li><code>instance:GetFullName()</code></li><li><code>instance:GetHead()</code></li><li><code>instance:GetHealth()</code></li><li><code>instance:GetHumanoid()</code></li><li><code>instance:GetMaxHealth()</code></li><li><code>instance:GetPosition()</code></li><li><code>instance:GetRootPart()</code></li><li><code>instance:GetTeam()</code></li><li><code>instance:IsA(className)</code></li><li><code>instance:IsAlive()</code></li><li><code>instance:IsAncestorOf(other)</code></li><li><code>instance:IsDescendantOf(other)</code></li><li><code>instance:ReadProperty(type_, offset)</code></li><li><code>instance:WaitForChild(name)</code></li><li><code>instance:WriteProperty(type_, offset, value)</code></li></ul></p>
+<h2 id="game/entity"><a class="anchor" href="#game/entity">entity</a></h2>
+<p>A cached list of players that is cheap to read every frame.</p>
+<p><ul class="ref"><li><code>entity.AddEntity(target, name, enemy, team)</code></li><li><code>entity.AddModel(key, data)</code></li><li><code>entity.ClearModels()</code></li><li><code>entity.Count()</code></li><li><code>entity.Debug()</code></li><li><code>entity.EachBone(bone, fn, opts)</code></li><li><code>entity.EditModel(key, changes)</code></li><li><code>entity.FromInstance(inst)</code></li><li><code>entity.GetBonePositions(bone, opts)</code></li><li><code>entity.GetBots()</code></li><li><code>entity.GetCameraCFrame()</code></li><li><code>entity.GetCameraFOV()</code></li><li><code>entity.GetCameraLookVector()</code></li><li><code>entity.GetCameraPosition()</code></li><li><code>entity.GetCameraYaw()</code></li><li><code>entity.GetESP(opts, buffer, weapons)</code></li><li><code>entity.GetEntities()</code></li><li><code>entity.GetLocalPlayer()</code></li><li><code>entity.GetNPCs()</code></li><li><code>entity.GetPartInstance(index)</code></li><li><code>entity.GetPartPosition(index)</code></li><li><code>entity.GetPartRotation(index)</code></li><li><code>entity.GetPartSize(index)</code></li><li><code>entity.GetParts()</code></li><li><code>entity.GetPlayerByAddress(addr)</code></li><li><code>entity.GetPlayerByName(name)</code></li><li><code>entity.GetPlayers(onlyEnemies, includeBots)</code></li><li><code>entity.GetTarget()</code></li><li><code>entity.HumanoidStateName(id)</code></li><li><code>entity.IsBot(p)</code></li><li><code>entity.IsPlayer(v)</code></li><li><code>entity.MarkBot(target, isBot)</code></li><li><code>entity.RemoveEntity(target)</code></li><li><code>entity.RemoveModel(key)</code></li><li><code>entity.SetBotRules(rules)</code></li><li><code>entity.SetNPCScan(cfg)</code></li><li><code>entity.SetPartScan(maxParts, seconds)</code></li><li><code>entity.WorldToScreen(v)</code></li></ul></p>
+<h2 id="game/player-objects"><a class="anchor" href="#game/player-objects">Player objects</a></h2>
+<p><ul class="ref"><li><code>player:Alive()</code></li><li><code>player:Enemy()</code></li><li><code>player:GetAccountAge()</code></li><li><code>player:GetAddress()</code></li><li><code>player:GetBone(name)</code></li><li><code>player:GetBoneAddress(name)</code></li><li><code>player:GetBoneCFrame(name)</code></li><li><code>player:GetBoneInstance(name)</code></li><li><code>player:GetBoneNames()</code></li><li><code>player:GetBonePosition(name)</code></li><li><code>player:GetBoneRotation(name)</code></li><li><code>player:GetBoneScreen(name)</code></li><li><code>player:GetBoneSize(name)</code></li><li><code>player:GetBones()</code></li><li><code>player:GetBot()</code></li><li><code>player:GetBoundingBox()</code></li><li><code>player:GetCFrame()</code></li><li><code>player:GetCharacter()</code></li><li><code>player:GetDisplayName()</code></li><li><code>player:GetDistance()</code></li><li><code>player:GetHead()</code></li><li><code>player:GetHeadCFrame()</code></li><li><code>player:GetHeadLookVector()</code></li><li><code>player:GetHealth()</code></li><li><code>player:GetHumanoid()</code></li><li><code>player:GetHumanoidState()</code></li><li><code>player:GetHumanoidStateId()</code></li><li><code>player:GetLookVector()</code></li><li><code>player:GetMaxHealth()</code></li><li><code>player:GetName()</code></li><li><code>player:GetPosition()</code></li><li><code>player:GetRigType()</code></li><li><code>player:GetRightVector()</code></li><li><code>player:GetRootPart()</code></li><li><code>player:GetRotation()</code></li><li><code>player:GetTeam()</code></li><li><code>player:GetTeamColor()</code></li><li><code>player:GetUserId()</code></li><li><code>player:GetVelocity()</code></li><li><code>player:GetWeapon()</code></li><li><code>player:GetWhitelisted()</code></li><li><code>player:GetYaw()</code></li><li><code>player:Local()</code></li><li><code>player:MarkBot(v)</code></li><li><code>player:NPC()</code></li><li><code>player:Visible()</code></li></ul></p>
+<h2 id="game/utility-and-cheat"><a class="anchor" href="#game/utility-and-cheat">utility and cheat</a></h2>
+<p><ul class="ref"><li><code>utility.GetCameraCFrame()</code></li><li><code>utility.GetCameraFOV()</code></li><li><code>utility.GetCameraLookVector()</code></li><li><code>utility.GetCameraPosition()</code></li><li><code>utility.GetMousePos()</code></li><li><code>utility.GetTickCount()</code></li><li><code>utility.LoadImage(data)</code></li><li><code>utility.MoveMouse(dx, dy)</code></li><li><code>utility.Notify(text, kind, duration)</code></li><li><code>utility.RandomFloat(lo, hi)</code></li><li><code>utility.RandomInt(lo, hi)</code></li><li><code>utility.SetClipboard(text)</code></li><li><code>utility.WorldToScreen(v, vy, vz)</code></li></ul></p>
+<p><ul class="ref"><li><code>cheat.Notify(text, kind, duration)</code></li><li><code>cheat.Register(name, fn)</code></li><li><code>cheat.Unregister(name, fn)</code></li></ul></p>
+<h2 id="game/memory"><a class="anchor" href="#game/memory">memory</a></h2>
+<p>Type names: <code>float</code>, <code>double</code>, <code>int</code>, <code>uint</code>, <code>bool</code>, <code>byte</code>, <code>short</code>, <code>ushort</code>, <code>int64</code>, <code>uint64</code>, <code>pointer</code>, <code>string</code>, <code>vector2</code>, <code>vector3</code>, <code>color3</code>, <code>cframe</code>.</p>
+<p><ul class="ref"><li><code>memory.IsValid(address)</code></li><li><code>memory.Read(type_, address)</code></li><li><code>memory.ReadBytes(address, count)</code></li><li><code>memory.ReadCFrame(address)</code></li><li><code>memory.ReadChain(address, offsets)</code></li><li><code>memory.ReadFloat(address)</code></li><li><code>memory.ReadInt(address)</code></li><li><code>memory.ReadPointer(address)</code></li><li><code>memory.ReadString(address, maxLength)</code></li><li><code>memory.ReadVector3(address)</code></li><li><code>memory.Rebase(offset)</code></li><li><code>memory.Write(type_, address, value)</code></li><li><code>memory.WriteBytes(address, bytes)</code></li><li><code>memory.WriteFloat(address, v)</code></li><li><code>memory.WriteInt(address, v)</code></li><li><code>memory.WritePointer(address, v)</code></li><li><code>memory.WriteString(address, value)</code></li><li><code>memory.WriteVector3(address, v)</code></li></ul></p><footer class="pager"><a href="#data"><span>Previous</span>Files, web and data</a><a class="next" href="#datatypes"><span>Next</span>Datatypes</a></footer></article><article id="datatypes" data-title="Datatypes"><h1>Datatypes</h1>
+<p><code>typeof(value)</code> returns the names used on this page.</p>
+<h2 id="datatypes/vector3"><a class="anchor" href="#datatypes/vector3">Vector3</a></h2>
+<p><code>Vector3.new(x, y, z)</code>. Fields <code>X</code>, <code>Y</code>, <code>Z</code>, <code>Magnitude</code>, <code>Unit</code>. Supports <code>+ - * /</code>, unary minus and <code>==</code>.</p>
+<p>Constants: <code>Vector3.zero</code>, <code>Vector3.one</code>, <code>Vector3.xAxis</code>, <code>Vector3.yAxis</code>, <code>Vector3.zAxis</code>.</p>
+<p><ul class="ref"><li><code>v:Abs()</code></li><li><code>v:Angle(o, axis)</code></li><li><code>v:Ceil()</code></li><li><code>v:Clone()</code></li><li><code>v:Cross(o)</code></li><li><code>v:Distance(o)</code></li><li><code>v:Dot(o)</code></li><li><code>v:Floor()</code></li><li><code>v:FuzzyEq(o, eps)</code></li><li><code>v:Length()</code></li><li><code>v:Lerp(o, t)</code></li><li><code>v:Max(o)</code></li><li><code>v:Min(o)</code></li><li><code>v:Normalize()</code></li><li><code>v:Project(o)</code></li><li><code>v:Reflect(n)</code></li><li><code>v:Sign()</code></li><li><code>v:Slerp(o, t)</code></li><li><code>v:ToYawPitch()</code></li><li><code>Vector3.new(x, y, z)</code></li></ul></p>
+<h2 id="datatypes/vector2"><a class="anchor" href="#datatypes/vector2">Vector2</a></h2>
+<p><code>Vector2.new(x, y)</code>. Fields <code>X</code>, <code>Y</code>, <code>Magnitude</code>, <code>Unit</code>.</p>
+<p><ul class="ref"><li><code>v:Abs()</code></li><li><code>v:Angle()</code></li><li><code>v:Ceil()</code></li><li><code>v:Clone()</code></li><li><code>v:Cross(o)</code></li><li><code>v:Dot(o)</code></li><li><code>v:Floor()</code></li><li><code>v:FuzzyEq(o, eps)</code></li><li><code>v:Lerp(o, t)</code></li><li><code>v:Max(o)</code></li><li><code>v:Min(o)</code></li><li><code>Vector2.new(x, y)</code></li></ul></p>
+<h2 id="datatypes/cframe"><a class="anchor" href="#datatypes/cframe">CFrame</a></h2>
+<p><code>CFrame.new()</code>, <code>CFrame.new(x, y, z)</code>, <code>CFrame.Angles(rx, ry, rz)</code>, <code>CFrame.fromOrientation(rx, ry, rz)</code>. Fields <code>Position</code>, <code>X</code>, <code>Y</code>, <code>Z</code>, <code>LookVector</code>, <code>RightVector</code>, <code>UpVector</code>. <code>cf * cf</code> combines, <code>cf * vector</code> transforms a point.</p>
+<p><ul class="ref"><li><code>CFrame.Angles(rx, ry, rz)</code></li><li><code>cf:GetComponents()</code></li><li><code>cf:Inverse()</code></li><li><code>cf:Lerp(o, t)</code></li><li><code>CFrame.LookAt(from, target, up)</code></li><li><code>cf:PointToObjectSpace(v)</code></li><li><code>cf:PointToWorldSpace(v)</code></li><li><code>cf:ToEulerAnglesXYZ()</code></li><li><code>cf:ToMatrix12()</code></li><li><code>cf:ToObjectSpace(cf)</code></li><li><code>cf:ToOrientation()</code></li><li><code>cf:ToWorldSpace(cf)</code></li><li><code>cf:VectorToObjectSpace(v)</code></li><li><code>cf:VectorToWorldSpace(v)</code></li><li><code>cf:components()</code></li><li><code>CFrame.fromAxisAngle(axis, angle)</code></li><li><code>CFrame.fromMatrix(m, p)</code></li><li><code>CFrame.fromOrientation(rx, ry, rz)</code></li><li><code>CFrame.new(x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22)</code></li></ul></p>
+<h2 id="datatypes/color3"><a class="anchor" href="#datatypes/color3">Color3</a></h2>
+<p><code>Color3.new(r, g, b)</code> with 0-1 channels, <code>Color3.fromRGB(r, g, b)</code>, <code>Color3.fromHSV(h, s, v)</code>, <code>Color3.fromHex("#ff8800")</code>. Fields <code>R</code>, <code>G</code>, <code>B</code>.</p>
+<p><ul class="ref"><li><code>c:Clone()</code></li><li><code>c:Lerp(o, t)</code></li><li><code>c:ToHSV()</code></li><li><code>c:ToHex()</code></li><li><code>c:ToRGB()</code></li><li><code>Color3.fromHSV(h, s, v)</code></li><li><code>Color3.fromHex(hex)</code></li><li><code>Color3.fromRGB(r, g, b)</code></li><li><code>Color3.new(r, g, b)</code></li></ul></p>
+<h2 id="datatypes/udim-udim2-and-ray"><a class="anchor" href="#datatypes/udim-udim2-and-ray">UDim, UDim2 and Ray</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Constructor</th>
+<th>Fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UDim.new(scale, offset)</code></td>
+<td><code>Scale</code>, <code>Offset</code></td>
+</tr>
+<tr>
+<td><code>UDim2.new(xScale, xOffset, yScale, yOffset)</code>, <code>UDim2.fromOffset(x, y)</code>, <code>UDim2.fromScale(x, y)</code></td>
+<td><code>X</code>, <code>Y</code>, <code>Width</code>, <code>Height</code></td>
+</tr>
+<tr>
+<td><code>Ray.new(origin, direction)</code></td>
+<td><code>Origin</code>, <code>Direction</code>, <code>Unit</code>, <code>:ClosestPoint(p)</code>, <code>:Distance(p)</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="datatypes/random"><a class="anchor" href="#datatypes/random">Random</a></h2>
+<div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">rng</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Random</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="nv">rng</span><span class="p">:</span><span class="nf">NextInteger</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">),</span><span class="w"> </span><span class="nv">rng</span><span class="p">:</span><span class="nf">NextNumber</span><span class="p">(),</span><span class="w"> </span><span class="nv">rng</span><span class="p">:</span><span class="nf">NextNumber</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">))</span>
+</code></pre></div>
+
+<p>Also <code>rng:NextUnitVector()</code>, <code>rng:Shuffle(list)</code> and <code>rng:Clone()</code>.</p>
+<h2 id="datatypes/enum"><a class="anchor" href="#datatypes/enum">Enum</a></h2>
+<p><code>Enum.KeyCode.E</code>, <code>Enum.KeyCode.LeftShift</code>, <code>Enum.KeyCode.MouseButton1</code>, <code>Enum.UserInputType.Keyboard</code>, <code>Enum.Material.Neon</code>. Each item has <code>Name</code> and <code>Value</code>.</p><footer class="pager"><a href="#game"><span>Previous</span>Game, entities and memory</a><a class="next" href="#luau"><span>Next</span>Luau support</a></footer></article><article id="luau" data-title="Luau support"><h1>Luau support</h1>
+<p>The VM is Lua 5.4. Scripts written for Roblox's Luau are translated when they load. Line numbers stay the same, so errors point at the right line.</p>
+<h2 id="luau/syntax-that-is-translated"><a class="anchor" href="#luau/syntax-that-is-translated">Syntax that is translated</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Luau</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compound assignment</td>
+<td><code>count += 1</code>, <code>text ..= "!"</code></td>
+</tr>
+<tr>
+<td><code>continue</code></td>
+<td><code>if not ok then continue end</code></td>
+</tr>
+<tr>
+<td>Type annotations and casts</td>
+<td><code>local n: number = 5</code>, <code>x :: any</code></td>
+</tr>
+<tr>
+<td><code>type</code> and <code>export type</code></td>
+<td><code>type Point = { x: number, y: number }</code></td>
+</tr>
+<tr>
+<td><code>if</code> as a value</td>
+<td><code>local c = if hp &gt; 50 then green else red</code></td>
+</tr>
+<tr>
+<td>String interpolation</td>
+<td><code>`{name} has {hp} hp`</code></td>
+</tr>
+<tr>
+<td>Looping over a table directly</td>
+<td><code>for key, value in tbl do</code></td>
+</tr>
+<tr>
+<td>Number literals</td>
+<td><code>1_000_000</code>, <code>0b1010</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="luau/library-additions"><a class="anchor" href="#luau/library-additions">Library additions</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Functions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tasks</td>
+<td><code>task.spawn</code>, <code>task.wait</code>, <code>task.delay</code>, <code>task.defer</code>, <code>task.cancel</code>, <code>wait</code>, <code>spawn</code>, <code>delay</code>, <code>tick</code></td>
+</tr>
+<tr>
+<td>Bits</td>
+<td><code>bit32.band</code>, <code>bor</code>, <code>bxor</code>, <code>bnot</code>, <code>lshift</code>, <code>rshift</code>, <code>arshift</code>, <code>lrotate</code>, <code>rrotate</code>, <code>extract</code>, <code>replace</code>, <code>countlz</code>, <code>countrz</code>, <code>byteswap</code></td>
+</tr>
+<tr>
+<td>Maths</td>
+<td><code>math.clamp</code>, <code>math.round</code>, <code>math.sign</code>, <code>math.lerp</code>, <code>math.map</code>, <code>math.noise</code>, <code>math.atan2</code>, <code>math.pow</code></td>
+</tr>
+<tr>
+<td>Strings</td>
+<td><code>string.split</code>, <code>string.trim</code>, <code>string.startswith</code>, <code>string.endswith</code></td>
+</tr>
+<tr>
+<td>Tables</td>
+<td><code>table.find</code>, <code>table.clone</code>, <code>table.clear</code>, <code>table.create</code>, <code>table.keys</code>, <code>table.count</code>, <code>table.freeze</code></td>
+</tr>
+<tr>
+<td>Globals</td>
+<td><code>typeof</code>, <code>getgenv</code>, <code>getfenv</code>, <code>setfenv</code>, <code>newproxy</code>, <code>gcinfo</code>, <code>unpack</code>, <code>loadstring</code>, <code>shared</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="luau/behaviour-matched-to-luau"><a class="anchor" href="#luau/behaviour-matched-to-luau">Behaviour matched to Luau</a></h2>
+<ul>
+<li><code>tostring(5.0)</code> and <code>print(5.0)</code> give <code>5</code>.</li>
+<li><code>string.format("%d", 3.7)</code> gives <code>3</code> instead of an error.</li>
+<li><code>math.random</code>, <code>string.sub</code> and <code>string.rep</code> accept fractional numbers.</li>
+</ul>
+<h2 id="luau/known-differences"><a class="anchor" href="#luau/known-differences">Known differences</a></h2>
+<ul>
+<li>Joining a fractional-type number with <code>..</code> still shows <code>.0</code>, for example <code>"HP: " .. 100.0</code> gives <code>HP: 100.0</code>. Use <code>tostring</code>, <code>string.format</code> or a backtick string.</li>
+<li><code>continue</code> inside <code>repeat ... until</code> fails if a <code>local</code> is declared between the <code>continue</code> and the <code>until</code>.</li>
+<li>An <code>if</code> used as a value cannot use <code>...</code> from the surrounding function.</li>
+<li><code>error</code> raises a real error, as in standard Lua.</li>
+</ul><footer class="pager"><a href="#datatypes"><span>Previous</span>Datatypes</a><a class="next" href="#matcha"><span>Next</span>Matcha scripts</a></footer></article><article id="matcha" data-title="Matcha scripts"><h1>Matcha scripts</h1>
+<p>Scripts written for Matcha load without changes when they stay within the functions below. Luau syntax is translated, see <a href="#luau">Luau support</a>.</p>
+<h2 id="matcha/supported"><a class="anchor" href="#matcha/supported">Supported</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Names</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Drawing</td>
+<td><code>Drawing.new</code> with <code>Square</code>, <code>Line</code>, <code>Circle</code>, <code>Text</code>, <code>Triangle</code>, <code>Quad</code>, <code>Image</code>; <code>:Remove()</code>; <code>Drawing.Fonts</code>; <code>cleardrawcache</code>, <code>isrenderobj</code>, <code>getrenderproperty</code>, <code>setrenderproperty</code></td>
+</tr>
+<tr>
+<td>UI</td>
+<td><code>UI.AddTab</code>, <code>UI.RemoveTab</code>, <code>UI.GetValue</code>, <code>UI.SetValue</code>, <code>tab:Section</code>, <code>Toggle</code>, <code>Keybind</code>, <code>SliderInt</code>, <code>SliderFloat</code>, <code>Combo</code>, <code>Button</code>, <code>ColorPicker</code>, <code>ColorPicker2</code>, <code>InputText</code>, <code>Text</code>, <code>Spacing</code></td>
+</tr>
+<tr>
+<td>Services</td>
+<td><code>RunService.Heartbeat</code>, <code>RenderStepped</code>, <code>Stepped</code>; <code>UserInputService.InputBegan</code>, <code>InputEnded</code>; <code>HttpService:JSONEncode</code>, <code>JSONDecode</code>, <code>GenerateGUID</code></td>
+</tr>
+<tr>
+<td>Input</td>
+<td><code>keypress</code>, <code>keyrelease</code>, <code>iskeypressed</code>, <code>mouse1press</code>, <code>mouse1release</code>, <code>mouse1click</code>, <code>mouse2press</code>, <code>mouse2release</code>, <code>mouse2click</code>, <code>ismouse1pressed</code>, <code>ismouse2pressed</code>, <code>mousemoveabs</code>, <code>mousemoverel</code>, <code>mousescroll</code>, <code>setclipboard</code>, <code>isrbxactive</code></td>
+</tr>
+<tr>
+<td>Files</td>
+<td><code>writefile</code>, <code>readfile</code>, <code>appendfile</code>, <code>makefolder</code>, <code>isfile</code>, <code>isfolder</code>, <code>listfiles</code>, <code>delfile</code>, <code>delfolder</code></td>
+</tr>
+<tr>
+<td>Web</td>
+<td><code>httpget</code>, <code>httppost</code>, <code>request</code>, <code>game:HttpGet</code></td>
+</tr>
+<tr>
+<td>Memory</td>
+<td><code>getbase</code>, <code>memory_read</code>, <code>memory_write</code></td>
+</tr>
+<tr>
+<td>Globals</td>
+<td><code>WorldToScreen</code>, <code>notify</code>, <code>identifyexecutor</code>, <code>gethwid</code>, <code>base64encode</code>, <code>base64decode</code>, <code>tick</code>, <code>typeof</code>, <code>getgenv</code>, <code>getfenv</code>, <code>setfenv</code>, <code>loadstring</code>, <code>require</code>, <code>wait</code>, <code>spawn</code>, <code>task.*</code>, <code>printl</code>, <code>warn</code></td>
+</tr>
+<tr>
+<td>Datatypes</td>
+<td><code>Vector3</code>, <code>Vector2</code>, <code>CFrame</code>, <code>Color3</code>, <code>UDim</code>, <code>UDim2</code>, <code>Ray</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="matcha/drawing-objects"><a class="anchor" href="#matcha/drawing-objects">Drawing objects</a></h2>
+<div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Drawing</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Square"</span><span class="p">)</span>
+<span class="nv">box</span><span class="p">.</span><span class="py">Position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Vector2</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span>
+<span class="nv">box</span><span class="p">.</span><span class="py">Size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Vector2</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span><span class="w"> </span><span class="mi">120</span><span class="p">)</span>
+<span class="nv">box</span><span class="p">.</span><span class="py">Color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Color3</span><span class="p">.</span><span class="nf">fromRGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span><span class="w"> </span><span class="mi">80</span><span class="p">,</span><span class="w"> </span><span class="mi">80</span><span class="p">)</span>
+<span class="nv">box</span><span class="p">.</span><span class="py">Thickness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span>
+<span class="nv">box</span><span class="p">.</span><span class="py">Visible</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+</code></pre></div>
+
+<div class="table"><table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Properties</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>all</td>
+<td><code>Visible</code>, <code>Color</code>, <code>Transparency</code> (1 is solid), <code>ZIndex</code>, <code>Position</code></td>
+</tr>
+<tr>
+<td><code>Square</code></td>
+<td><code>Size</code>, <code>Filled</code>, <code>Thickness</code>, <code>Rounding</code></td>
+</tr>
+<tr>
+<td><code>Line</code></td>
+<td><code>From</code>, <code>To</code>, <code>Thickness</code></td>
+</tr>
+<tr>
+<td><code>Circle</code></td>
+<td><code>Radius</code>, <code>NumSides</code>, <code>Thickness</code>, <code>Filled</code></td>
+</tr>
+<tr>
+<td><code>Text</code></td>
+<td><code>Text</code>, <code>Size</code>, <code>Center</code>, <code>Outline</code></td>
+</tr>
+<tr>
+<td><code>Triangle</code></td>
+<td><code>PointA</code>, <code>PointB</code>, <code>PointC</code>, <code>Filled</code>, <code>Thickness</code></td>
+</tr>
+<tr>
+<td><code>Quad</code></td>
+<td><code>PointA</code> to <code>PointD</code>, <code>Filled</code>, <code>Thickness</code></td>
+</tr>
+<tr>
+<td><code>Image</code></td>
+<td><code>Data</code> (raw file bytes), <code>Size</code>, <code>Rounding</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="matcha/works-differently"><a class="anchor" href="#matcha/works-differently">Works differently</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Matcha</th>
+<th>Alpine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>error(...)</code> prints and continues</td>
+<td>Raises a real error.</td>
+</tr>
+<tr>
+<td><code>task.defer</code>, <code>task.delay</code> do nothing</td>
+<td>Both work.</td>
+</tr>
+<tr>
+<td>Section pages are tabs</td>
+<td>Shown as a "page" dropdown at the top of the section.</td>
+</tr>
+<tr>
+<td><code>Font</code> on text drawings</td>
+<td>Accepted and ignored; the default font is used.</td>
+</tr>
+<tr>
+<td><code>Enum.KeyCode</code> values</td>
+<td>Windows key codes.</td>
+</tr>
+<tr>
+<td><code>sec:Tip</code></td>
+<td>Does nothing.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="matcha/not-available"><a class="anchor" href="#matcha/not-available">Not available</a></h2>
+<p>These need access to the game's own scripts or engine, which Alpine does not have: <code>decompile</code>, <code>getscripts</code>, <code>getscriptbytecode</code>, <code>getscripthash</code>, <code>getgc</code>, <code>setgc</code>, <code>applygc</code>, <code>firetouchinterest</code>, <code>fireclickdetector</code>, <code>fireproximityprompt</code>, <code>RemoteEvent:FireServer</code>, <code>RemoteFunction:InvokeServer</code>, <code>queue_on_teleport</code>, <code>setfflag</code>, <code>getfflag</code>, <code>run_secure</code>, <code>Instance.new</code>.</p>
+<p>They are left undefined, so a check such as <code>if getgc then</code> behaves correctly.</p>
+<p>Also not available: <code>GetAttribute</code>, <code>SetAttribute</code>, <code>Workspace:Raycast</code>, <code>GetPingValue</code>, <code>getrbxversion</code>, <code>getgamename</code>.</p><footer class="pager"><a href="#luau"><span>Previous</span>Luau support</a><a class="next" href="#serotonin"><span>Next</span>Serotonin scripts</a></footer></article><article id="serotonin" data-title="Serotonin scripts"><h1>Serotonin scripts</h1>
+<p>Alpine's PascalCase API follows Serotonin's, so most Serotonin scripts run unchanged. Every function also exists in camelCase and snake_case.</p>
+<h2 id="serotonin/supported"><a class="anchor" href="#serotonin/supported">Supported</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Names</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cheat</td>
+<td><code>cheat.register</code> with <code>onUpdate</code>, <code>onSlowUpdate</code>, <code>onPaint</code>, <code>shutdown</code>, <code>newPlace</code>; <code>cheat.getWindowSize</code></td>
+</tr>
+<tr>
+<td>draw</td>
+<td><code>Line</code>, <code>Rect</code>, <code>RectFilled</code>, <code>Circle</code>, <code>CircleFilled</code>, <code>Triangle</code>, <code>TriangleFilled</code>, <code>Gradient</code>, <code>Polyline</code>, <code>ConvexPolyFilled</code>, <code>Text</code>, <code>TextOutlined</code>, <code>GetTextSize</code>, <code>Image</code>, <code>ComputeConvexHull</code>, <code>GetPartCorners</code></td>
+</tr>
+<tr>
+<td>utility</td>
+<td><code>RandomInt</code>, <code>RandomFloat</code>, <code>GetTickCount</code>, <code>GetFingerprint</code>, <code>SetClipboard</code>, <code>GetClipboard</code>, <code>MoveMouse</code>, <code>GetDeltaTime</code>, <code>GetMousePos</code>, <code>GetMenuState</code>, <code>WorldToScreen</code>, <code>LoadImage</code></td>
+</tr>
+<tr>
+<td>input</td>
+<td><code>mouse.Click</code>, <code>mouse.IsClicked</code>, <code>mouse.Scroll</code>, <code>keyboard.Press</code>, <code>keyboard.Release</code>, <code>keyboard.Click</code>, <code>keyboard.IsPressed</code></td>
+</tr>
+<tr>
+<td>ui</td>
+<td><code>newTab</code>, <code>newContainer</code>, <code>newCheckbox</code>, <code>newSliderInt</code>, <code>newSliderFloat</code>, <code>newDropdown</code>, <code>newMultiselect</code>, <code>newColorpicker</code>, <code>newInputText</code>, <code>newButton</code>, <code>newListbox</code>, <code>getValue</code>, <code>setValue</code>, <code>setVisibility</code></td>
+</tr>
+<tr>
+<td>entity</td>
+<td><code>GetPlayers</code>, <code>GetLocalPlayer</code>, player fields and bone functions, <code>GetParts</code>, <code>getPartPosition</code>, <code>getPartSize</code>, <code>getPartRotation</code>, <code>AddModel</code>, <code>EditModel</code>, <code>RemoveModel</code>, <code>ClearModels</code></td>
+</tr>
+<tr>
+<td>game</td>
+<td><code>Workspace</code>, <code>Players</code>, <code>LocalPlayer</code>, <code>DataModel</code>, <code>PlaceID</code>, <code>CameraPosition</code>, <code>GetService</code>, instance methods</td>
+</tr>
+<tr>
+<td>other</td>
+<td><code>file.read</code>, <code>file.write</code>, <code>http.Get</code>, <code>http.Post</code>, <code>memory.Read</code>, <code>memory.Write</code>, <code>memory.GetBase</code>, <code>memory.Rebase</code>, <code>audio.playSound</code>, <code>audio.beep</code>, <code>audio.stopAll</code>, <code>Vector3</code>, <code>Color3</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="serotonin/example"><a class="anchor" href="#serotonin/example">Example</a></h2>
+<div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">tab</span><span class="p">,</span><span class="w"> </span><span class="nv">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"demo_tab"</span><span class="p">,</span><span class="w"> </span><span class="s2">"demo_box"</span>
+<span class="nv">ui</span><span class="p">.</span><span class="nf">newTab</span><span class="p">(</span><span class="nv">tab</span><span class="p">,</span><span class="w"> </span><span class="s2">"Demo"</span><span class="p">)</span>
+<span class="nv">ui</span><span class="p">.</span><span class="nf">newContainer</span><span class="p">(</span><span class="nv">tab</span><span class="p">,</span><span class="w"> </span><span class="nv">box</span><span class="p">,</span><span class="w"> </span><span class="s2">"Options"</span><span class="p">)</span>
+<span class="nv">ui</span><span class="p">.</span><span class="nf">newCheckbox</span><span class="p">(</span><span class="nv">tab</span><span class="p">,</span><span class="w"> </span><span class="nv">box</span><span class="p">,</span><span class="w"> </span><span class="s2">"Enabled"</span><span class="p">)</span>
+<span class="nv">ui</span><span class="p">.</span><span class="nf">setValue</span><span class="p">(</span><span class="nv">tab</span><span class="p">,</span><span class="w"> </span><span class="nv">box</span><span class="p">,</span><span class="w"> </span><span class="s2">"Enabled"</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+
+<span class="nv">cheat</span><span class="p">.</span><span class="nf">register</span><span class="p">(</span><span class="s2">"onPaint"</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">()</span>
+<span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">ui</span><span class="p">.</span><span class="nf">getValue</span><span class="p">(</span><span class="nv">tab</span><span class="p">,</span><span class="w"> </span><span class="nv">box</span><span class="p">,</span><span class="w"> </span><span class="s2">"Enabled"</span><span class="p">)</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="kr">end</span>
+<span class="w">    </span><span class="kd">local</span><span class="w"> </span><span class="nv">w</span><span class="p">,</span><span class="w"> </span><span class="nv">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">cheat</span><span class="p">.</span><span class="nf">getWindowSize</span><span class="p">()</span>
+<span class="w">    </span><span class="nv">draw</span><span class="p">.</span><span class="nf">RectFilled</span><span class="p">(</span><span class="nv">w</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">60</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">120</span><span class="p">,</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span><span class="w"> </span><span class="nv">Color3</span><span class="p">.</span><span class="nf">fromRGB</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">),</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">)</span>
+<span class="w">    </span><span class="nv">draw</span><span class="p">.</span><span class="nf">TextOutlined</span><span class="p">(</span><span class="s2">"serotonin style"</span><span class="p">,</span><span class="w"> </span><span class="nv">w</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">48</span><span class="p">,</span><span class="w"> </span><span class="mi">25</span><span class="p">,</span><span class="w"> </span><span class="nv">Color3</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span>
+<span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="serotonin/works-differently"><a class="anchor" href="#serotonin/works-differently">Works differently</a></h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Serotonin</th>
+<th>Alpine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dropdown value starts at 1</td>
+<td><code>ui.getValue</code> returns an index starting at 0.</td>
+</tr>
+<tr>
+<td><code>entity.GetParts</code> reads a host cache</td>
+<td>Scans the workspace every 2 seconds, up to 4,096 parts. Change with <code>entity.SetPartScan(maxParts, seconds)</code>.</td>
+</tr>
+<tr>
+<td><code>entity.AddModel</code> uses <code>Team</code>, <code>Weapon</code>, <code>Health</code></td>
+<td>Only <code>Character</code> and <code>Name</code> are used.</td>
+</tr>
+<tr>
+<td>Several sounds can overlap</td>
+<td>One sound at a time.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="serotonin/not-available"><a class="anchor" href="#serotonin/not-available">Not available</a></h2>
+<p><code>game.SilentAim</code>, <code>game.PlayerWhitelist</code>, <code>game.GetFFlag</code>, <code>game.SetFFlag</code>, <code>:GetAttribute</code>, <code>:GetAttributes</code>, <code>:GetFirstAttributeOfType</code>, <code>:SetHighlightOnTop</code>, <code>:SetHighlightTransparency</code>.</p><footer class="pager"><a href="#matcha"><span>Previous</span>Matcha scripts</a><a class="next" href="#examples"><span>Next</span>Examples</a></footer></article><article id="examples" data-title="Examples"><h1>Examples</h1>
+<h2 id="examples/watermark-with-a-menu-toggle"><a class="anchor" href="#examples/watermark-with-a-menu-toggle">Watermark with a menu toggle</a></h2>
+<div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">tab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">ui</span><span class="p">.</span><span class="nf">tab</span><span class="p">(</span><span class="s2">"Watermark"</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">tab</span><span class="p">:</span><span class="nf">group</span><span class="p">(</span><span class="s2">"Options"</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">box</span><span class="p">:</span><span class="nf">toggle</span><span class="p">(</span><span class="s2">"Show watermark"</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">tint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">box</span><span class="p">:</span><span class="nf">color</span><span class="p">(</span><span class="s2">"Colour"</span><span class="p">,</span><span class="w"> </span><span class="mi">120</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="mi">255</span><span class="p">,</span><span class="w"> </span><span class="mi">255</span><span class="p">)</span>
+
+<span class="nv">hook</span><span class="p">.</span><span class="nf">register</span><span class="p">(</span><span class="s2">"onPaint"</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">()</span>
+<span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">enabled</span><span class="p">:</span><span class="nf">get</span><span class="p">()</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="kr">end</span>
+<span class="w">    </span><span class="kd">local</span><span class="w"> </span><span class="nv">w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">screen</span><span class="p">.</span><span class="nf">width</span><span class="p">()</span>
+<span class="w">    </span><span class="kd">local</span><span class="w"> </span><span class="nv">r</span><span class="p">,</span><span class="w"> </span><span class="nv">g</span><span class="p">,</span><span class="w"> </span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">tint</span><span class="p">:</span><span class="nf">rgba</span><span class="p">()</span>
+<span class="w">    </span><span class="kd">local</span><span class="w"> </span><span class="nv">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"alpine | "</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nb">math.floor</span><span class="p">(</span><span class="nv">time</span><span class="p">.</span><span class="nf">now</span><span class="p">())</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s2">"s"</span>
+<span class="w">    </span><span class="kd">local</span><span class="w"> </span><span class="nv">tw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">draw</span><span class="p">.</span><span class="nf">text_size</span><span class="p">(</span><span class="nv">text</span><span class="p">)</span>
+<span class="w">    </span><span class="nv">draw</span><span class="p">.</span><span class="nf">rect_filled</span><span class="p">(</span><span class="nv">w</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">tw</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">28</span><span class="p">,</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span><span class="w"> </span><span class="nv">tw</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span><span class="w"> </span><span class="mi">22</span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="p">.</span><span class="nf">rgba</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="mi">18</span><span class="p">,</span><span class="w"> </span><span class="mi">24</span><span class="p">,</span><span class="w"> </span><span class="mi">220</span><span class="p">),</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">    </span><span class="nv">draw</span><span class="p">.</span><span class="nf">text</span><span class="p">(</span><span class="nv">text</span><span class="p">,</span><span class="w"> </span><span class="nv">w</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">tw</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="p">.</span><span class="nf">rgba</span><span class="p">(</span><span class="nv">r</span><span class="p">,</span><span class="w"> </span><span class="nv">g</span><span class="p">,</span><span class="w"> </span><span class="nv">b</span><span class="p">))</span>
+<span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="examples/saving-settings"><a class="anchor" href="#examples/saving-settings">Saving settings</a></h2>
+<div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">settings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">config</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="s2">"clicker"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">delay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span><span class="w"> </span><span class="nv">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x46</span><span class="w"> </span><span class="p">})</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">tab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">ui</span><span class="p">.</span><span class="nf">tab</span><span class="p">(</span><span class="s2">"Clicker"</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">box</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">tab</span><span class="p">:</span><span class="nf">group</span><span class="p">(</span><span class="s2">"Options"</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">delay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">box</span><span class="p">:</span><span class="nf">slider</span><span class="p">(</span><span class="s2">"Delay"</span><span class="p">,</span><span class="w"> </span><span class="nv">settings</span><span class="p">.</span><span class="py">delay</span><span class="p">,</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s2">" s"</span><span class="p">)</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">box</span><span class="p">:</span><span class="nf">keybind</span><span class="p">(</span><span class="s2">"Hold to click"</span><span class="p">,</span><span class="w"> </span><span class="nv">settings</span><span class="p">.</span><span class="py">key</span><span class="p">)</span>
+
+<span class="nv">delay</span><span class="p">:</span><span class="nf">on_change</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="nv">v</span><span class="p">)</span><span class="w"> </span><span class="nv">settings</span><span class="p">.</span><span class="py">delay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">v</span><span class="w"> </span><span class="nv">config</span><span class="p">.</span><span class="nf">save</span><span class="p">(</span><span class="s2">"clicker"</span><span class="p">,</span><span class="w"> </span><span class="nv">settings</span><span class="p">)</span><span class="w"> </span><span class="kr">end</span><span class="p">)</span>
+<span class="nv">key</span><span class="p">:</span><span class="nf">on_change</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="nv">v</span><span class="p">)</span><span class="w"> </span><span class="nv">settings</span><span class="p">.</span><span class="py">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">v</span><span class="w"> </span><span class="nv">config</span><span class="p">.</span><span class="nf">save</span><span class="p">(</span><span class="s2">"clicker"</span><span class="p">,</span><span class="w"> </span><span class="nv">settings</span><span class="p">)</span><span class="w"> </span><span class="kr">end</span><span class="p">)</span>
+
+<span class="kr">while</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="kr">do</span>
+<span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="nv">key</span><span class="p">:</span><span class="nf">active</span><span class="p">()</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="nv">input</span><span class="p">.</span><span class="nf">game_focused</span><span class="p">()</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="nv">mouse</span><span class="p">.</span><span class="nf">Click</span><span class="p">(</span><span class="s2">"leftmouse"</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">)</span><span class="w"> </span><span class="kr">end</span>
+<span class="w">    </span><span class="nv">task</span><span class="p">.</span><span class="nf">wait</span><span class="p">(</span><span class="nv">delay</span><span class="p">:</span><span class="nf">get</span><span class="p">())</span>
+<span class="kr">end</span>
+</code></pre></div>
+
+<h2 id="examples/luau-and-roblox-style"><a class="anchor" href="#examples/luau-and-roblox-style">Luau and Roblox style</a></h2>
+<div class="hl"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">RunService</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">game</span><span class="p">:</span><span class="nf">GetService</span><span class="p">(</span><span class="s2">"RunService"</span><span class="p">)</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Drawing</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Text"</span><span class="p">)</span>
+<span class="nv">label</span><span class="p">.</span><span class="py">Position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">Vector2</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">)</span>
+<span class="nv">label</span><span class="p">.</span><span class="py">Outline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<span class="nv">label</span><span class="p">.</span><span class="py">Visible</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">frames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span>
+<span class="nv">RunService</span><span class="p">.</span><span class="py">RenderStepped</span><span class="p">:</span><span class="nf">Connect</span><span class="p">(</span><span class="kr">function</span><span class="p">(</span><span class="nv">dt</span><span class="p">:</span><span class="w"> </span><span class="py">number</span><span class="p">)</span>
+<span class="w">    </span><span class="nv">frames</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="nv">frames</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="kr">end</span>
+<span class="w">    </span><span class="nv">label</span><span class="p">.</span><span class="py">Text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">`</span><span class="nv">frame</span><span class="w"> </span><span class="p">{</span><span class="nv">frames</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="nb">math.floor</span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">math.max</span><span class="p">(</span><span class="nv">dt</span><span class="p">,</span><span class="w"> </span><span class="mf">0.001</span><span class="p">))}</span><span class="w"> </span><span class="nv">fps</span><span class="err">`</span>
+<span class="w">    </span><span class="nv">label</span><span class="p">.</span><span class="py">Color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kr">if</span><span class="w"> </span><span class="nv">frames</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">120</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">60</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="nv">Color3</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="kr">else</span><span class="w"> </span><span class="nv">Color3</span><span class="p">.</span><span class="nf">fromRGB</span><span class="p">(</span><span class="mi">120</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="mi">255</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="examples/fetching-json"><a class="anchor" href="#examples/fetching-json">Fetching JSON</a></h2>
+<div class="hl"><pre><span></span><code><span class="nv">http</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="s2">"https://httpbin.org/uuid"</span><span class="p">,</span><span class="w"> </span><span class="kc">nil</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="nv">body</span><span class="p">,</span><span class="w"> </span><span class="nv">status</span><span class="p">,</span><span class="w"> </span><span class="nv">err</span><span class="p">)</span>
+<span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="kr">then</span>
+<span class="w">        </span><span class="nb">warn</span><span class="p">(</span><span class="s2">"request failed:"</span><span class="p">,</span><span class="w"> </span><span class="nv">err</span><span class="p">)</span>
+<span class="w">        </span><span class="kr">return</span>
+<span class="w">    </span><span class="kr">end</span>
+<span class="w">    </span><span class="kd">local</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">json</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="nv">body</span><span class="p">)</span>
+<span class="w">    </span><span class="nv">ui</span><span class="p">.</span><span class="nf">notify</span><span class="p">(</span><span class="s2">"uuid: "</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="nv">data</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="nv">data</span><span class="p">.</span><span class="py">uuid</span><span class="p">),</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="kr">end</span><span class="p">)</span>
+</code></pre></div><footer class="pager"><a href="#serotonin"><span>Previous</span>Serotonin scripts</a><span></span></footer></article></main>
+</div>
+<script>
+(function(){
+var root=document.documentElement;root.classList.add('js');
+try{var saved=localStorage.getItem('theme');if(saved)root.setAttribute('data-theme',saved);}catch(e){}
+var articles=[].slice.call(document.querySelectorAll('article'));
+var groups=[].slice.call(document.querySelectorAll('.side .group'));
+var side=document.querySelector('.side');
+function show(){
+  var hash=decodeURIComponent(location.hash.slice(1));
+  var page=hash.split('/')[0];
+  var target=document.getElementById(page)&&document.getElementById(page).tagName==='ARTICLE'?page:articles[0].id;
+  articles.forEach(function(a){a.classList.toggle('active',a.id===target);});
+  groups.forEach(function(g){g.classList.toggle('active',g.getAttribute('data-page')===target);});
+  var active=document.getElementById(target);
+  document.title=active.getAttribute('data-title')+' - Alpine Lua';
+  side.classList.remove('open');
+  var el=hash.indexOf('/')>0?document.getElementById(hash):null;
+  if(el)el.scrollIntoView();else window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',show);show();
+document.getElementById('menu').addEventListener('click',function(){side.classList.toggle('open');});
+document.getElementById('theme').addEventListener('click',function(){
+  var dark=root.getAttribute('data-theme')?root.getAttribute('data-theme')==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var next=dark?'light':'dark';root.setAttribute('data-theme',next);
+  try{localStorage.setItem('theme',next);}catch(e){}
+});
+var index=[];
+articles.forEach(function(a){
+  var title=a.getAttribute('data-title');var current={href:'#'+a.id,page:title,head:title,text:''};index.push(current);
+  [].slice.call(a.children).forEach(function(node){
+    if(node.tagName==='H2'){current={href:'#'+node.id,page:title,head:node.textContent,text:''};index.push(current);}
+    else if(node.tagName!=='FOOTER'&&node.tagName!=='H1'){current.text+=' '+node.textContent;}
+  });
+});
+index.forEach(function(e){e.low=(e.head+' '+e.text).toLowerCase();});
+var input=document.getElementById('q');var box=document.getElementById('results');var sel=-1;
+function esc(s){return s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+function search(){
+  var words=input.value.toLowerCase().split(/\s+/).filter(Boolean);sel=-1;
+  if(!words.length){box.classList.remove('open');box.innerHTML='';return;}
+  var hits=index.filter(function(e){return words.every(function(w){return e.low.indexOf(w)>=0;});});
+  hits.sort(function(a,b){var x=a.head.toLowerCase().indexOf(words[0])>=0?0:1,y=b.head.toLowerCase().indexOf(words[0])>=0?0:1;return x-y;});
+  box.innerHTML=hits.length?hits.slice(0,12).map(function(e){
+    var at=e.text.toLowerCase().indexOf(words[0]);var snip=at>=0?e.text.slice(Math.max(0,at-30),at+70):e.text.slice(0,90);
+    return '<a href="'+e.href+'"><b>'+esc(e.page)+(e.head!==e.page?' / '+esc(e.head):'')+'</b><span>'+esc(snip.trim())+'</span></a>';
+  }).join(''):'<p>No matches.</p>';
+  box.classList.add('open');
+}
+input.addEventListener('input',search);
+input.addEventListener('keydown',function(ev){
+  var links=box.querySelectorAll('a');
+  if(ev.key==='ArrowDown'||ev.key==='ArrowUp'){ev.preventDefault();if(!links.length)return;sel=(sel+(ev.key==='ArrowDown'?1:-1)+links.length)%links.length;[].forEach.call(links,function(l,i){l.classList.toggle('sel',i===sel);});}
+  else if(ev.key==='Enter'){var pick=links[sel<0?0:sel];if(pick){location.hash=pick.getAttribute('href');input.value='';search();input.blur();}}
+  else if(ev.key==='Escape'){input.value='';search();input.blur();}
+});
+box.addEventListener('click',function(){input.value='';setTimeout(search,0);});
+document.addEventListener('click',function(ev){if(!ev.target.closest('.search'))box.classList.remove('open');});
+document.addEventListener('keydown',function(ev){if(ev.key==='/'&&document.activeElement!==input){ev.preventDefault();input.focus();}});
+})();
+</script>
+</body>
+</html>
